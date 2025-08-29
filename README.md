@@ -1,25 +1,26 @@
-# Real-Time Object Detection with YOLO, Flask Backend & Dashboard  
-
-This project integrates **YOLOv8 object detection** with a **Flask backend** and a **dashboard** for visualization.  
-It allows detecting objects in real-time from webcam/video, storing results in a database, and monitoring detections via a dashboard.  
+# 🔍 Real-Time Object Detection with YOLO 🚀  
+This project integrates **YOLOv8 object detection** with a **Flask backend** and an **interactive dashboard** 📊.  
+It enables real-time object detection from webcam/video, saves detection results in a database, and displays them on a dashboard.  
 
 ---
 
-## 🚀 Features
-- Real-time object detection using **YOLOv8**  
-- Flask-based backend with **SQLite database**  
-- REST APIs for storing & fetching detection results  
-- Interactive dashboard to view:  
-  - Detected objects  
-  - Confidence scores  
-  - Timestamped detection history  
-- Option to save detection video outputs  
+## ✨ Features
+✅ Real-time object detection using **YOLOv8**  
+✅ Flask backend with **SQLite database**  
+✅ REST API for storing & fetching detection results  
+✅ Interactive **Dashboard** to view:  
+   - 📌 Detected objects  
+   - 📊 Confidence scores  
+   - ⏱️ Timestamped detection history  
+✅ Option to **save detection video outputs**  
 
 ---
 
 ## 📂 Project Structure
+
+```plaintext
 project/
-│── server.py # Backend + Database + API + Dashboard
-│── detector.py # YOLO client code for real-time detection
-│── detections.db # SQLite database (auto-created on first run)
-│── requirements.txt # Required dependencies
+│── server.py          # ⚙️ Backend + Database + API + Dashboard
+│── detector.py        # 🎥 YOLO client code for real-time detection
+│── detections.db      # 🗄️ SQLite database (auto-created on first run)
+│── requirements.txt   # 📦 Required dependencies
