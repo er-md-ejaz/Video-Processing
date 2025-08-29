@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>YOLO Detection Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <!-- Chart.js via CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: system-ui, Arial, sans-serif; margin: 24px; }
+    h1 { margin-bottom: 16px; }
+    .grid { display: grid; grid-template-columns: 1fr; gap: 24px; max-width: 1100px; }
+    @media (min-width: 900px) { .grid { grid-template-columns: 1fr 1fr; } }
+    .card { padding: 16px; border: 1px solid #ddd; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #eee; padding: 8px 10px; text-align: left; font-size: 14px; }
+    th { background: #fafafa; }
+    .muted { color: #666; font-size: 13px; }
+    .stats { display: flex; gap: 16px; flex-wrap: wrap; }
+    .pill { padding: 8px 12px; background: #f3f4f6; border-radius: 999px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>YOLO Detection Dashboard</h1>
+  <div class="muted">Auto-refreshes every 5 seconds. Keep your detector running to see live updates.</div>
+
+  <div class="grid" style="margin-top: 16px;">
+    <div class="card">
+      <h3>Counts per Label</h3>
+      <canvas id="barChart"></canvas>
+      <div class="muted" id="totals"></div>
+    </div>
+
+    <div class="card">
+      <h3>Latest Detections</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Label</th>
+            <th>Confidence</th>
+            <th>Source</th>
+            <th>Timestamp (UTC)</th>
+          </tr>
+        </thead>
+        <tbody id="detectionsBody"></tbody>
+      </table>
+      <div class="muted">Showing most recent 50 entries.</div>
+    </div>
+  </div>
+
+  <script>
+    let barChart;
+
+    async function getJSON(url) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed ${url}: ${res.status}`);
+      return res.json();
+    }
+
+    async function loadStats() {
+      const data = await getJSON('/stats?minutes=5');
+      const counts = data.counts_per_label || {};
+      const labels = Object.keys(counts);
+      const values = Object.values(counts);
+
+      if (barChart) barChart.destroy();
+      const ctx = document.getElementById('barChart').getContext('2d');
+      barChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Detections',
+            data: values
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+          }
+        }
+      });
+
+      const totals = document.getElementById('totals');
+      totals.textContent =
+        `Total detections: ${data.total_detections} · Last 5 min: ${data.recent_count_last_minutes} (~${(data.recent_per_minute || 0).toFixed(2)}/min)`;
+    }
+
+    function td(text) {
+      const d = document.createElement('td');
+      d.textContent = text;
+      return d;
+    }
+
+    async function loadDetections() {
+      const detections = await getJSON('/detections?limit=50');
+      const body = document.getElementById('detectionsBody');
+      body.innerHTML = '';
+      detections.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.appendChild(td(d.id));
+        tr.appendChild(td(d.label));
+        tr.appendChild(td(`${(d.confidence*100).toFixed(1)}%`));
+        tr.appendChild(td(d.source || 'N/A'));
+        tr.appendChild(td(new Date(d.timestamp).toISOString().replace('T',' ').slice(0,19)));
+        body.appendChild(tr);
+      });
+    }
+
+    async function refresh() {
+      try {
+        await Promise.all([loadStats(), loadDetections()]);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    refresh();
+    setInterval(refresh, 5000);
+  </script>
+</body>
+</html>

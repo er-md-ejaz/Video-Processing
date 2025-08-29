@@ -1,0 +1,6 @@
+flask
+flask_sqlalchemy
+sqlalchemy
+requests
+ultralytics
+opencv-python
